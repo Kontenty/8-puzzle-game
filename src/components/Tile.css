@@ -1,0 +1,13 @@
+.tile {
+  width: 165px;
+  height: 165px;
+  border-radius: 5px;
+  background-image: url("lighthouse.jpg");
+  background-size: 300% 300%;
+}
+.tile:hover {
+  border: 1px solid #333;
+}
+.tile.empty {
+  background-image: none;
+}
