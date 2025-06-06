@@ -1,10 +1,12 @@
 import { useState } from "react";
 import Tile from "./Tile";
+import WinModal from "./WinModal";
 
 const Board = () => {
   const initialTiles = Array.from({ length: 9 }, (_, i) => i);
   const [shuffledTiles, setShuffledTiles] = useState<number[]>(initialTiles);
   const [emptyIndex, setEmptyIndex] = useState(8);
+  const [showWin, setShowWin] = useState(false);
 
   const shuffleTiles = () => {
     const shuffled = [...initialTiles];
@@ -15,6 +17,9 @@ const Board = () => {
     setShuffledTiles(shuffled);
     setEmptyIndex(shuffled.indexOf(7));
   };
+
+  const checkWin = (newShuffled: number[]) =>
+    JSON.stringify(newShuffled) === JSON.stringify(initialTiles);
 
   const handleTileClick = (clickedIndex: number) => {
     const clickedRowIndex = Math.floor(clickedIndex / 3);
@@ -32,16 +37,20 @@ const Board = () => {
       ];
       setShuffledTiles(newShuffled);
       setEmptyIndex(clickedIndex);
+      if (checkWin(newShuffled)) {
+        setShowWin(true);
+      }
     }
   };
 
   return (
     <section>
+      {showWin && <WinModal onClick={() => setShowWin(false)} />}
       <div className="flex justify-between mb-16">
         <h1 className="text-5xl">8-Puzzle</h1>
         <div className="flex items-center gap-4">
           <button
-            className="flex items-center gap-1 px-3 py-1 bg-rose-200 rounded-md text-rose-800"
+            className="flex items-center gap-1 px-4 py-2 bg-rose-200 rounded-md text-rose-800 border-rose-800 border"
             onClick={shuffleTiles}
           >
             <svg
@@ -56,7 +65,7 @@ const Board = () => {
             </svg>
             <span>Shuffle</span>
           </button>
-          <div className="px-3 py-1 border-2 border-gray-200 rounded-md">
+          <div className="px-4 py-2 border-2 border-gray-200 rounded-md">
             Moves
           </div>
         </div>
