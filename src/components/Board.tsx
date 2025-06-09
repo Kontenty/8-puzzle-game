@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import Tile from "./Tile";
 import WinModal from "./WinModal";
+import { cva } from "class-variance-authority";
+
+const grid = cva("grid w-fit gap-1 mx-auto", {
+  variants: {
+    size: { 3: "grid-cols-3", 4: "grid-cols-4", 5: "grid-cols-5" },
+  },
+});
+
+const getInitial = (n: number) =>
+  Array.from({ length: Math.pow(n, 2) }, (_, i) => i);
 
 const Board = () => {
-  const initialTiles = Array.from({ length: 9 }, (_, i) => i);
+  const [size, setSize] = useState<3 | 4 | 5>(3);
+  const initialTiles = getInitial(size);
   const [shuffledTiles, setShuffledTiles] = useState<number[]>(initialTiles);
-  const [emptyIndex, setEmptyIndex] = useState(8);
+  const [emptyIndex, setEmptyIndex] = useState(Math.pow(size, 2) - 1);
   const [showWin, setShowWin] = useState(false);
   const [moveCount, setMoveCount] = useState(0);
 
@@ -25,10 +36,10 @@ const Board = () => {
     JSON.stringify(newShuffled) === JSON.stringify(initialTiles);
 
   const handleTileClick = (clickedIndex: number) => {
-    const clickedRowIndex = Math.floor(clickedIndex / 3);
-    const clickedColIndex = clickedIndex % 3;
-    const emptyRowIndex = Math.floor(emptyIndex / 3);
-    const emptyColIndex = emptyIndex % 3;
+    const clickedRowIndex = Math.floor(clickedIndex / size);
+    const clickedColIndex = clickedIndex % size;
+    const emptyRowIndex = Math.floor(emptyIndex / size);
+    const emptyColIndex = emptyIndex % size;
     const moveDifference =
       Math.abs(clickedRowIndex - emptyRowIndex) +
       Math.abs(clickedColIndex - emptyColIndex);
@@ -47,12 +58,42 @@ const Board = () => {
     }
   };
 
+  const handleSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = Number(event?.target?.value ?? `${size}`);
+    if (value === 3 || value === 4 || value === 5) {
+      setSize(value);
+      setEmptyIndex(Math.pow(value, 2) - 1);
+      setShuffledTiles(getInitial(value));
+    }
+  };
+
   return (
     <section>
       {showWin && <WinModal onClick={() => setShowWin(false)} />}
-      <div className="flex justify-between mb-16">
+      <header className="flex justify-between mb-16 gap-10 w-2xl items-end">
         <h1 className="text-5xl">8-Puzzle</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-end gap-4">
+          <div>
+            <label
+              htmlFor="size-select"
+              className="block mb-2 text-sm font-medium text-gray-900"
+            >
+              Number of tiles
+            </label>
+            <select
+              id="size-select"
+              value={size}
+              onChange={handleSizeChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500 block w-full"
+            >
+              <option value="" disabled>
+                Chose size
+              </option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+              <option value={5}>5</option>
+            </select>
+          </div>
           <button
             className="flex items-center gap-1 px-4 py-2 bg-rose-200 rounded-md text-rose-800 border-rose-800 border"
             onClick={shuffleTiles}
@@ -72,19 +113,18 @@ const Board = () => {
             <span className="text-bold ml-2">{moveCount}</span>
           </div>
         </div>
-      </div>
-      <div className="size-[510px]">
-        <div className="grid grid-cols-3 gap-1">
-          {shuffledTiles.map((tileIndex, index) => (
-            <Tile
-              key={tileIndex}
-              tileIndex={tileIndex}
-              index={index}
-              handleTileClick={handleTileClick}
-              emptyIndex={emptyIndex}
-            />
-          ))}
-        </div>
+      </header>
+      <div className={grid({ size })}>
+        {shuffledTiles.map((tileIndex, index) => (
+          <Tile
+            key={tileIndex}
+            tileIndex={tileIndex}
+            index={index}
+            size={size}
+            handleTileClick={handleTileClick}
+            emptyIndex={emptyIndex}
+          />
+        ))}
       </div>
     </section>
   );
