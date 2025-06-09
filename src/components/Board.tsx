@@ -27,7 +27,7 @@ const Board = () => {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setShuffledTiles(shuffled);
-    setEmptyIndex(shuffled.indexOf(7));
+    setEmptyIndex(shuffled.indexOf(Math.pow(size, 2) - 1));
     setMoveCount(0);
     setShowWin(false);
   };
